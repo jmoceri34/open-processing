@@ -30,6 +30,7 @@ public class Brick
     topBound = y - (h/2);
     bottomBound = y + (h/2);
     
+    // brick is drawn with a fill color and a rectangle
     fill(r, g, b);
     rect(x, y, w, h);
     

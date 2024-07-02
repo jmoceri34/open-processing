@@ -18,6 +18,7 @@ public class Player
     tr = pX + (w/2);
     mid_point = pX;
     
+    // the player is drawn with a color and a rectangle following the players x position
     fill(255);
     rect(pX, pY, w, h);
   }

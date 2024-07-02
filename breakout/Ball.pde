@@ -103,6 +103,7 @@ public class Ball
       bY += (speed * yDirection);
     }
     
+    // ball is drawn with a fill color and ellipse
     fill(255, 0, 0);
     ellipse(bX, bY, w, h);
   }

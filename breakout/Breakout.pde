@@ -51,6 +51,7 @@ void draw()
   
   ball.update();
   
+  // check the bricks after the next ball update position
   for (int i = 0; i < bricks.length; i++)
   {
     boolean collision = bricks[i].checkForCollision();
