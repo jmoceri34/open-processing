@@ -2,6 +2,11 @@ public Player player;
 public Ball ball;
 public Brick[] bricks;
 public int sizeWidth = 800, sizeHeight = 600;
+public int frameRate = 0;
+public int startTime = 0;
+public int ln = 65;
+public boolean cantCollideWithBricks = false; 
+public boolean intro = true;
 
 void setup()
 {
@@ -37,17 +42,23 @@ void setup()
 
 void draw()
 {
-  println(ball.bY);
+  if ((millis() - startTime) > ln && cantCollideWithBricks) {
+    cantCollideWithBricks = false;
+  }
   
   background(0);  
   player.update();
+  
   ball.update();
   
   for (int i = 0; i < bricks.length; i++)
   {
     boolean collision = bricks[i].checkForCollision();
     
-    if (collision) {
+    if (collision && !cantCollideWithBricks) {
+      startTime = millis();
+      cantCollideWithBricks = true;
+      
       bricks[i].deactivate();
       if (ball.rightBound > bricks[i].rightBound || ball.leftBound < bricks[i].leftBound) {
         ball.flipX();
@@ -57,5 +68,22 @@ void draw()
       }
     }
   }
-  
+}
+
+void mouseMoved()
+{
+  if(intro) ball.bX = mouseX;
+}
+
+void mouseDragged()
+{
+  if(intro) ball.bX = mouseX;
+}
+
+void mouseReleased()
+{
+  if(intro)
+  {
+    intro = false; // once the game starts .. 
+  }
 }

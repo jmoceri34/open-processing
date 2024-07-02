@@ -86,24 +86,25 @@ public class Ball
 
   public void update()
   {
-    boundaryChecks();
+    if (!intro) {
+        boundaryChecks();
     
-    leftBound = bX - (w/2);
-    rightBound = bX + (w/2);
-    topBound = bY - (h/2);
-    bottomBound = bY + (h/2);
+      leftBound = bX - (w/2);
+      rightBound = bX + (w/2);
+      topBound = bY - (h/2);
+      bottomBound = bY + (h/2);
     
-    if(yDirection == 1)
-    {
-      checkForPlayerHit();
+      if(yDirection == 1)
+      {
+        checkForPlayerHit();
+      }
+    
+      bX += xOffset;
+      bY += (speed * yDirection);
     }
-    
-    bX += xOffset;
-    bY += (speed * yDirection);
     
     fill(255, 0, 0);
     ellipse(bX, bY, w, h);
-  
   }
 
 }
