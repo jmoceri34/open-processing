@@ -1,5 +1,5 @@
 // Helper variables
-float a, b, c, d, e, f, g, k, m, n, o, p;
+//float a, b, c, d, e, f, g, k, m, n, o, p;
 
 String last_key = "L";
 
@@ -23,7 +23,7 @@ class Player {
   private boolean left = false, right = false;
 
   // Jump values
-  private boolean jump = false, mid_air = true;
+  private boolean jump = false, canJump = false;
 
   private float falling_value;
 
@@ -54,7 +54,7 @@ class Player {
 
   void movement() {
 
-    if (jump && mid_air) {
+    if (jump && gravity.mid_air) {
       
       // This is what brings it back down after hitting the peak
       // The comparison value is the trigger point for when the player will begin to fall
@@ -66,18 +66,18 @@ class Player {
         falling_value = 0;
       }
       
-      user.player_y -= pow(falling_value, 2);
+      player_y -= pow(falling_value, 2);
     }
 
     if (left) {
       // This must be placed above otherwise colliding with the wall will result in a movement forward
-      user.change_speed(speed_value * -1, 0);
+      change_speed(speed_value * -1, 0);
 
       if (frame_count % 5 == 0 && speed_value != 6) {
         speed_value += 0.5;
       }
 
-      if (user.tl[0] < left_point) {
+      if (tl[0] < left_point) {
         xoffset -= speed_value;
         width -= speed_value + speed_value;
       }
@@ -87,23 +87,23 @@ class Player {
         speed_value -= 0.5;
       }
 
-      if (user.tl[0] < left_point) {
+      if (tl[0] < left_point) {
         xoffset -= speed_value;
         width -= speed_value + speed_value;
       }
 
-      user.change_speed(speed_value * -1, 0);
+      change_speed(speed_value * -1, 0);
     }
 
     if (right) {
       // This must be placed above otherwise colliding with the wall will result in a movement forward
-      user.change_speed(speed_value, 0);
+      change_speed(speed_value, 0);
 
       if (frame_count % 5 == 0 && speed_value != 6) {
         speed_value += 0.5;
       }
 
-      if (user.tr[0] > right_point) {
+      if (tr[0] > right_point) {
         xoffset += speed_value;
         width += speed_value + speed_value;
       }
@@ -114,9 +114,9 @@ class Player {
         speed_value -= 0.5;
       }
 
-      user.change_speed(speed_value, 0);
+      change_speed(speed_value, 0);
 
-      if (user.tr[0] > right_point) {
+      if (tr[0] > right_point) {
         xoffset += speed_value;
         width += speed_value + speed_value;
       }
@@ -126,12 +126,12 @@ class Player {
   void userKeyPressed() {
 
     // To allow only one jump per time
-    if (key == ' ' && !jump && !mid_air) {
+    if (key == ' ' && !jump && canJump) { // && !gravity.mid_air) {
 
       gravity.gravity_value = 0.1;
 
-      user.jump = true;
-      user.mid_air = true;
+      jump = true;
+      gravity.mid_air = true;
     }
 
     if (key == CODED) {
@@ -142,7 +142,7 @@ class Player {
           speed_value = 0;
 
         last_key = "L";
-        user.left = true;
+        left = true;
       }
       else if (keyCode == RIGHT) {
 
@@ -150,7 +150,7 @@ class Player {
           speed_value = 0;
 
         last_key = "R";
-        user.right = true;
+        right = true;
       }
     }
   }
@@ -160,25 +160,26 @@ class Player {
     // Reset purposes
     if (key == 'r') {
       
-      user.player_y = 100;
+      player_y = 100;
       gravity.gravity_value = 0.1;
     }
 
     // This makes it go back down
     if (key == ' ') {
 
-      user.jump = false;
+      jump = false;
+      canJump = false;
       falling_value = gravity.intensity;
     }
 
     if (key == CODED) {
       if (keyCode == LEFT) {
         //right_point = ceil((1520 * 0.8)) + xoffset;
-        user.left = false;
+        left = false;
       }
       else if (keyCode == RIGHT) {
         //left_point = ceil((1520 * 0.2)) + xoffset;
-        user.right = false;
+        right = false;
       }
     }
   }
@@ -220,6 +221,7 @@ class Player {
     br[1] = player_y + h;
 
     max_speed = 6;
+    var collided = false;
 
     // Check each environment block in the world for a collision with the player
     int i;
@@ -257,11 +259,17 @@ class Player {
        */
       if ( (tl[0] > block_collide[i].bl[0] && tl[0] < block_collide[i].br[0] && (round(tl[1] - pow(2, 2)) + (pow(gravity.gravity_value, 2)) >= block_collide[i].tl[1]) && (round(tl[1] - pow(2, 2)) + (pow(gravity.gravity_value, 2)) <= block_collide[i].bl[1])) ) {
 
+        collided = true;
+        
         // Place the player at the roof
         player_y = block_collide[i].bl[1];
 
         // and let gravity bring them down
         gravity.gravity_value = 2;
+        
+        jump = false;
+        canJump = false;
+        falling_value = gravity.intensity;
       }
       /*
       If top left is within right range
@@ -286,6 +294,8 @@ class Player {
       if (left) {
         if (tl[1] >= block_collide[i].tr[1] && tl[1] <= block_collide[i].br[1] && (tl[0] - (max_speed-1)) >= (block_collide[i].br[0] - (max_speed-1)) && (tl[0] - (max_speed-1)) <= block_collide[i].br[0] ) {
 
+          collided = true;
+          
           // If the player isn't right up against the wall, make it so
           if ( player_x != block_collide[i].tr[0])
             player_x = block_collide[i].tr[0];
@@ -308,11 +318,17 @@ class Player {
        */
       if ( (tr[0] > block_collide[i].bl[0] && tr[0] < block_collide[i].br[0] && (round(tr[1] - pow(2, 2)) + (pow(gravity.gravity_value, 2)) >= block_collide[i].tl[1]) && (round(tr[1] - pow(2, 2)) + (pow(gravity.gravity_value, 2)) <= block_collide[i].bl[1])) ) {
 
+        collided = true;
+        
         // Place the player at the roof
         player_y = block_collide[i].bl[1];
 
         // and let gravity bring them down
         gravity.gravity_value = 2;
+        
+        jump = false;
+        canJump = false;
+        falling_value = gravity.intensity;
       }
 
       /*
@@ -329,6 +345,8 @@ class Player {
         if (tr[1] >= block_collide[i].tl[1] && tr[1] <= block_collide[i].bl[1] && (tr[0] + speed_value) <= (block_collide[i].bl[0] + (max_speed)) && (tr[0] + speed_value) >= block_collide[i].bl[0] ) {
 
           //println("tr lr trig");
+          
+          collided = true;
 
           // If the player isn't right up against the wall, make it so
           if (player_x + w != block_collide[i].bl[0])
@@ -392,15 +410,18 @@ class Player {
        */
       if ( (bl[0] > block_collide[i].tl[0] && bl[0] < block_collide[i].tr[0] && (round(bl[1]) + ceil((pow(gravity.gravity_value, 2))) >= block_collide[i].tl[1]) && (round(bl[1]) + ceil((pow(gravity.gravity_value, 2))) <= block_collide[i].bl[1])) ) {
         
+        collided = true;
+        canJump = true;
+        
         //println("BL Trig");
         // Place the player on top of the e. block
         player_y = round(block_collide[i].tl[1] - h);
 
         // player lands on object, keep them on the object
-        mid_air = false;
+        gravity.mid_air = false;
 
         // for a smooth fall 
-        gravity.gravity_value = (gravity.intensity / 2);
+        gravity.gravity_value = (gravity.intensity);
       }
       /*
       If bottom left is within right range
@@ -416,6 +437,8 @@ class Player {
       if (left) {
         if (bl[1] >= block_collide[i].tr[1] && bl[1] <= block_collide[i].br[1] && (bl[0] - (max_speed-1)) >= (block_collide[i].br[0] - (max_speed-1)) && (bl[0] - (max_speed-1)) <= block_collide[i].br[0] ) {
 
+          collided = true;
+          
           // If the player isn't right up against the wall, make it so
           if ( player_x != block_collide[i].tr[0])
             player_x = block_collide[i].tr[0];
@@ -440,15 +463,17 @@ class Player {
       if ( (br[0] > block_collide[i].tl[0] && br[0] < block_collide[i].tr[0] && (round(bl[1]) + ceil((pow(gravity.gravity_value, 2))) >= block_collide[i].tl[1]) && (round(bl[1]) + ceil((pow(gravity.gravity_value, 2))) <= block_collide[i].bl[1])) ) {
         
         //println("BR trig");
+        collided = true;
+        canJump = true;
         
         // Place the player on top of the e. block
         player_y = round(block_collide[i].tl[1] - h);
 
         // player lands on object, keep them on the object
-        mid_air = false;
-
+        gravity.mid_air = false;
+        
         // for a smooth fall
-        gravity.gravity_value = (gravity.intensity / 2);
+        gravity.gravity_value = (gravity.intensity);
       }
       
       /*
@@ -481,6 +506,8 @@ class Player {
       if (right) {
         if ( br[1] >= block_collide[i].tl[1] && br[1] <= block_collide[i].bl[1] && (br[0] + speed_value) <= (block_collide[i].bl[0] + (max_speed)) && (br[0] + speed_value) >= block_collide[i].bl[0] ) {
 
+          collided = true;
+          
           // If the player isn't right up against the wall, make it so
           if (player_x + w != block_collide[i].bl[0])
             player_x = block_collide[i].bl[0] - w;
@@ -491,6 +518,14 @@ class Player {
         }
       }
       
+      if (!collided) {
+        if (!gravity.mid_air) {
+          // for a smooth fall
+          gravity.gravity_value = gravity.intensity / 2;
+        }
+        
+        gravity.mid_air = true;
+      }
      
     }
 

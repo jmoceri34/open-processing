@@ -20,7 +20,7 @@ boolean move_back = false;
 float speed_value = 0, max_speed = 6;
 
 // Contains all of the environment blocks to interact with
-StaticWorldBlock[] blocks = new StaticWorldBlock[5];
+StaticWorldBlock[] blocks = new StaticWorldBlock[6];
 
 // Block creation
 StaticWorldBlock block = new StaticWorldBlock(0, 500, 1000, 200);
@@ -28,6 +28,7 @@ StaticWorldBlock block01 = new StaticWorldBlock(1300, 500, 1500, 200);
 StaticWorldBlock block02 = new StaticWorldBlock(3000, 500, 200, 200);
 StaticWorldBlock block03 = new StaticWorldBlock(3400, 500, 1000, 200);
 StaticWorldBlock block04 = new StaticWorldBlock(450, 350, 200, 200);
+StaticWorldBlock block05 = new StaticWorldBlock(450, 0, 200, 200);
 
 void setup() {
 
@@ -42,9 +43,10 @@ void setup() {
   blocks[2] = block02;
   blocks[3] = block03;
   blocks[4] = block04;
+  blocks[5] = block05;
 }
 
-void draw() {
+void draw() { //<>//
 
   background(255);
 
@@ -53,19 +55,19 @@ void draw() {
   right_point = ceil((1520 * 0.6)) + xoffset;
   left_point = ceil((1520 * 0.4)) + xoffset;
   
+  println(xoffset);
+  
   user.movement();
 
   frame_count++;
   
   user.gravity.on();
   
-  block.update();
-  block01.update();
-  block02.update();
-  block03.update();
-  block04.update();
+  for (var i = 0; i < blocks.length; i++) {
+    blocks[i].update();
+  }
 
-  user.update(blocks);
+  user.update(blocks); //<>//
 }
 
 void keyPressed() {
